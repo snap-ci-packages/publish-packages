@@ -28,6 +28,12 @@ namespace :yum do
     end
   end
 
+  task :prunerepo do
+    cd $REPO_DIR do
+      sh("repomanage --keep 5 --old rpm | xargs rm -f")
+    end
+  end
+
   task :createrepo do
     cd $REPO_DIR do
       mkdir_p "rpm"
@@ -42,7 +48,7 @@ namespace :yum do
     end
   end
 
-  task :all => [:s3_config, :init_repo, :fetchrepo, :createrepo, :uploadrepo]
+  task :all => [:s3_config, :init_repo, :fetchrepo, :prunerepo, :createrepo, :uploadrepo]
 end
 
 namespace :apt do
