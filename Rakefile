@@ -30,7 +30,7 @@ namespace :yum do
 
   task :prunerepo do
     cd $REPO_DIR do
-      sh("repomanage --keep 5 --old rpm | xargs rm -f")
+      sh("repomanage --keep 5 --old rpm | xargs rm -fv")
     end
   end
 
