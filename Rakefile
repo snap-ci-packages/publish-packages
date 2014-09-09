@@ -39,6 +39,7 @@ namespace :yum do
       mkdir_p "rpm"
       sh("cp #{$PROJECT_ROOT}/pkg/*.rpm ./rpm/")
       sh("createrepo --database --update . || createrepo --database .")
+      sh("repoview --title 'Extra packages for Snap CI' .")
     end
   end
 
