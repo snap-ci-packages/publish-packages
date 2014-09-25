@@ -35,6 +35,7 @@ namespace :yum do
   end
 
   task :createrepo do
+    sh('sudo su - -c "yum install repoview -y"')
     cd $REPO_DIR do
       mkdir_p "rpm"
       sh("cp #{$PROJECT_ROOT}/pkg/*.rpm ./rpm/")
