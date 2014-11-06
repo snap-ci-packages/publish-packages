@@ -38,8 +38,11 @@ namespace :yum do
     sh('sudo su - -c "yum install repoview -y"')
     cd $REPO_DIR do
       mkdir_p "rpm"
+      num_processors = %x[nproc].chomp.to_i
+      num_jobs       = num_processors*2
+
       sh("cp #{$PROJECT_ROOT}/pkg/*.rpm ./rpm/")
-      delta_opts = '--deltas --num-deltas 1 --max-delta-rpm-size 400000000 --workers $(nproc) --oldpackagedirs .'
+      delta_opts = '--deltas --num-deltas 1 --max-delta-rpm-size 400000000 --workers #{num_jobs} --oldpackagedirs .'
       sh("createrepo --database --update #{delta_opts} . || createrepo --database #{delta_opts} .")
       sh("repoview --title 'Extra packages for Snap CI' .")
     end
