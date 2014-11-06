@@ -39,7 +39,7 @@ namespace :yum do
     cd $REPO_DIR do
       mkdir_p "rpm"
       sh("cp #{$PROJECT_ROOT}/pkg/*.rpm ./rpm/")
-      delta_opts = '--deltas --num-deltas 3 --max-delta-rpm-size 10000000'
+      delta_opts = '--deltas --num-deltas 3 --max-delta-rpm-size 100000000'
       sh("createrepo --database --update #{delta_opts} . || createrepo --database #{delta_opts} .")
       sh("repoview --title 'Extra packages for Snap CI' .")
     end
