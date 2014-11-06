@@ -50,7 +50,7 @@ namespace :yum do
 
   task :uploadrepo do
     cd $REPO_DIR do
-      sh("aws s3 sync --acl public-read --storage-class REDUCED_REDUNDANCY --delete . s3://#{ENV['S3_YUM_BUCKET']}")
+      sh("aws s3 sync --acl public-read --delete . s3://#{ENV['S3_YUM_BUCKET']}")
     end
   end
 
@@ -88,7 +88,7 @@ namespace :apt do
 
   task :uploadrepo do
     cd $REPO_DIR do
-      sh("aws s3 sync --acl public-read --storage-class REDUCED_REDUNDANCY --delete . s3://#{ENV['S3_APT_BUCKET']}")
+      sh("aws s3 sync --acl public-read --delete . s3://#{ENV['S3_APT_BUCKET']}")
     end
   end
 
