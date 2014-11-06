@@ -12,9 +12,12 @@ end
 
 namespace :yum do
   task :init_repo do
-    $REPO_DIR = File.expand_path('../repo', __FILE__)
-    rm_rf   File.expand_path('../repo', __FILE__)
-    File.expand_path('../repo', __FILE__)
+    $REPO_DIR = if ENV['GO_SERVER_URL'] || ENV['SNAP_CI']
+      File.expand_path('~/.snap-ci-yum-repo')
+    else
+      rm_rf   File.expand_path('../repo', __FILE__)
+      File.expand_path('../repo', __FILE__)
+    end
     mkdir_p $REPO_DIR
   end
 
@@ -53,9 +56,12 @@ end
 
 namespace :apt do
   task :init_repo do
-    $REPO_DIR = File.expand_path('../repo', __FILE__)
-    rm_rf   File.expand_path('../repo', __FILE__)
-    File.expand_path('../repo', __FILE__)
+    $REPO_DIR = if ENV['GO_SERVER_URL'] || ENV['SNAP_CI']
+      File.expand_path('~/.snap-ci-apt-repo')
+    else
+      rm_rf   File.expand_path('../repo', __FILE__)
+      File.expand_path('../repo', __FILE__)
+    end
     mkdir_p $REPO_DIR
   end
 
