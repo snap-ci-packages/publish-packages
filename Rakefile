@@ -12,7 +12,7 @@ end
 
 namespace :yum do
   task :init_repo do
-    $REPO_DIR = if ENV['GO_SERVER_URL'] || ENV['SNAP_CI']
+    $REPO_DIR = if ENV['GO_SERVER_URL'] || ENV['CI']
       File.expand_path('~/.snap-ci-yum-repo')
     else
       rm_rf   File.expand_path('../repo', __FILE__)
@@ -38,19 +38,15 @@ namespace :yum do
     sh('sudo su - -c "yum install repoview -y"')
     cd $REPO_DIR do
       mkdir_p "rpm"
-      num_processors = %x[nproc].chomp.to_i
-      num_jobs       = num_processors*2
-
       sh("cp #{$PROJECT_ROOT}/pkg/*.rpm ./rpm/")
-      delta_opts = "--deltas --num-deltas 2 --max-delta-rpm-size 400000000 --workers #{num_jobs} --oldpackagedirs ."
-      sh("createrepo --database --update #{delta_opts} . || createrepo --database #{delta_opts} .")
+      sh("createrepo --database --update . || createrepo --database .")
       sh("repoview --title 'Extra packages for Snap CI' .")
     end
   end
 
   task :uploadrepo do
     cd $REPO_DIR do
-      sh("aws s3 sync --acl public-read --delete . s3://#{ENV['S3_YUM_BUCKET']}")
+      sh("aws s3 sync --acl public-read --storage-class REDUCED_REDUNDANCY --delete . s3://#{ENV['S3_YUM_BUCKET']}")
     end
   end
 
@@ -59,7 +55,7 @@ end
 
 namespace :apt do
   task :init_repo do
-    $REPO_DIR = if ENV['GO_SERVER_URL'] || ENV['SNAP_CI']
+    $REPO_DIR = if ENV['GO_SERVER_URL'] || ENV['CI']
       File.expand_path('~/.snap-ci-apt-repo')
     else
       rm_rf   File.expand_path('../repo', __FILE__)
@@ -88,7 +84,7 @@ namespace :apt do
 
   task :uploadrepo do
     cd $REPO_DIR do
-      sh("aws s3 sync --acl public-read --delete . s3://#{ENV['S3_APT_BUCKET']}")
+      sh("aws s3 sync --acl public-read --storage-class REDUCED_REDUNDANCY --delete . s3://#{ENV['S3_APT_BUCKET']}")
     end
   end
 
