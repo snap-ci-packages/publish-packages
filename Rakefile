@@ -10,6 +10,11 @@ task :s3_config do
   ENV['AWS_CONFIG_FILE'] = "#{$PROJECT_ROOT}/aws.cfg"
 end
 
+deps = %w(
+  git-build chromedriver-build phantomjs-build python-build ruby-build ssh-build
+  php-build papertrail-build java-build
+)
+
 namespace :yum do
   task :init_repo do
     $REPO_DIR = if ENV['GO_SERVER_URL'] || ENV['CI']
@@ -19,6 +24,32 @@ namespace :yum do
       File.expand_path('../repo', __FILE__)
     end
     mkdir_p $REPO_DIR
+  end
+
+  task :fetch_pkgs do
+    require 'json'
+    urls = []
+    deps.each do |dep|
+      sh("curl --silent --location --netrc https://api.snap-ci.com/project/snap-ci/#{dep}/branch/master/pipelines/latest > latest-#{dep}.json")
+      data = JSON.parse(File.read("latest-#{dep}.json"))
+      data['stages'].each do |stage|
+        stage['workers'].each do |worker|
+          worker['artifacts'].each do |artifact|
+            if artifact['name'] =~ /.*\.rpm$/
+              urls << artifact['_links']['self']['href']
+            end
+          end
+        end
+      end
+    end
+
+    mkdir_p 'pkg'
+
+    cd "pkg" do
+      urls.each do |url|
+        sh("curl --silent --location --netrc -O #{url}")
+      end
+    end
   end
 
   task :fetchrepo do
@@ -50,7 +81,7 @@ namespace :yum do
     end
   end
 
-  task :all => [:s3_config, :init_repo, :fetchrepo, :prunerepo, :createrepo, :uploadrepo]
+  task :all => [:s3_config, :init_repo, :fetch_pkgs, :fetchrepo, :prunerepo, :createrepo, :uploadrepo]
 end
 
 namespace :apt do
@@ -88,7 +119,7 @@ namespace :apt do
     end
   end
 
-  task :all => [:s3_config, :init_repo, :fetchrepo, :createrepo, :uploadrepo]
+  task :all => [:s3_config, :init_repo, :fetch_pkgs, :fetchrepo, :createrepo, :uploadrepo]
 end
 
 if File.exist?('/etc/centos-release')
