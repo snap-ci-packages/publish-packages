@@ -119,7 +119,7 @@ namespace :apt do
     end
   end
 
-  task :all => [:s3_config, :init_repo, :fetch_pkgs, :fetchrepo, :createrepo, :uploadrepo]
+  task :all => [:s3_config, :init_repo, :fetchrepo, :createrepo, :uploadrepo]
 end
 
 if File.exist?('/etc/centos-release')
