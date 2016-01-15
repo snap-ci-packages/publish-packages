@@ -12,7 +12,7 @@ end
 
 deps = %w(
   git-build chromedriver-build phantomjs-build python-build ruby-build ssh-build
-  php-build papertrail-build java-build git-crypt-build
+  php-build papertrail-build java-build git-crypt-build autoconf-archive-build
 )
 
 namespace :yum do
