@@ -4,7 +4,7 @@ task :s3_config do
   File.open("#{$PROJECT_ROOT}/aws.cfg", 'w') do |f|
     f.puts "[default]"
     f.puts "aws_access_key_id = #{ENV['S3_ACCESS_KEY']}"
-    f.puts "aws_secret_access_key = #{ENV['S3_SECRET_KEY']}"
+    f.puts "aws_secret_access_key = #{ENV['S3_SECRET_ACCESS_KEY']}"
     f.puts "region = us-east-1"
   end
   ENV['AWS_CONFIG_FILE'] = "#{$PROJECT_ROOT}/aws.cfg"
