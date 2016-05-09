@@ -129,7 +129,8 @@ namespace :yum_mirrors do
   end
 
   def repo_name_list
-    [ENV['REPO_NAME']] || [
+    return [ENV['REPO_NAME']] if ENV['REPO_NAME']
+    [
       'CentOS-Base',
       'CentOS-Debuginfo',
       'CentOS-Extras',
