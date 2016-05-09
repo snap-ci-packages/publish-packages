@@ -197,7 +197,14 @@ namespace :apt do
     end
   end
 
-  task :all => [:s3_config, :init_repo, :fetchrepo, :createrepo, :uploadrepo]
+  task :check_presence_of_repos do
+    missing_repos = repo_name_list.reject { |repo_name| File.exists? "/etc/yum.repos.d/#{repo_name}.repo" }
+    if missing_repos.any?
+      abort "Could not find following repos on the current enviroment:\n#{missing_repos.join("\n")}\nIf you are running on a CI Agent, make sure it was provisioned in order to add the repo."
+    end
+  end
+
+  task :all => [:check_presence_of_repos, :s3_config, :init_repo, :fetchrepo, :createrepo, :uploadrepo]
 end
 
 if File.exist?('/etc/centos-release')
