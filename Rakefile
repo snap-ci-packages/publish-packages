@@ -147,7 +147,7 @@ namespace :yum_mirrors do
       'pgdg94',
       'remi',
       'snap-ci-external-pkgs',
-      'snap-cio'
+      'snap-ci'
     ]
   end
 
