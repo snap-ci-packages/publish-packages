@@ -152,7 +152,7 @@ namespace :yum_mirrors do
 
   def generate_repo_config_from(original_repo_name)
     original_repo_file = "/etc/yum.repos.d/#{original_repo_name}.repo"
-    tmp_file = Tempfile.new
+    tmp_file = Tempfile.new('tmp_repo_config')
     FileUtils.cp original_repo_file, tmp_file.path
     sh "cat includepkgs >> #{tmp_file.path}"
     tmp_file
