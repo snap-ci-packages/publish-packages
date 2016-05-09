@@ -1,3 +1,5 @@
+require 'tempfile'
+
 $PROJECT_ROOT = Dir.pwd
 
 task :s3_config do
@@ -85,6 +87,80 @@ namespace :yum do
   task :all => [:s3_config, :init_repo, :fetch_pkgs, :fetchrepo, :prunerepo, :createrepo, :uploadrepo]
 end
 
+namespace :yum_mirrors do
+  task :init_mirrors_dir do
+    $REPO_DIR = if ENV['GO_SERVER_URL'] || ENV['CI']
+      File.expand_path('~/.snap-ci-yum-mirrors')
+    else
+      rm_rf   File.expand_path('../repo', __FILE__)
+      File.expand_path('../repo', __FILE__)
+    end
+    mkdir_p $REPO_DIR
+  end
+
+  task :create_snapshot_folder do
+    $SNAPSHOT_DIR = "#{$REPO_DIR}/#{version}"
+    mkdir_p $SNAPSHOT_DIR
+  end
+
+  task :reposync do
+    repo_name_list.each do |repo_name|
+      tmp_repo_config = generate_repo_config_from(repo_name)
+      sh "reposync -p #{$SNAPSHOT_DIR} -r #{repo_name} -c #{tmp_repo_config.path}"
+    end
+  end
+
+  task :createrepo do
+    sh('sudo su - -c "yum install repoview -y"')
+    cd $SNAPSHOT_DIR do
+      sh("createrepo --database --update .")
+      sh("repoview --title 'Mirror repositories' .")
+    end
+  end
+
+  task :uploadrepo do
+    cd $SNAPSHOT_DIR do
+      sh("aws s3 sync --acl public-read --storage-class REDUCED_REDUNDANCY . s3://#{ENV['S3_YUM_MIRRORS_BUCKET']}/#{version}")
+    end
+  end
+
+  def version
+    ENV['GO_PIPELINE_COUNTER'] || Time.new.to_i
+  end
+
+  def repo_name_list
+    [ENV['REPO_NAME']] || [
+      'CentOS-Base',
+      'CentOS-Debuginfo',
+      'CentOS-Extras',
+      'CentOS-fasttrack',
+      'CentOS-Media',
+      'CentOS-Updates',
+      'CentOS-Vault',
+      'epel',
+      'mongodb',
+      'mysql-community',
+      'mysql-connectors-community',
+      'pgdg92',
+      'pgdg93',
+      'pgdg94',
+      'remi',
+      'snap-ci-external-pkgs',
+      'snap-cio'
+    ]
+  end
+
+  def generate_repo_config_from(original_repo_name)
+    original_repo_file = "/etc/yum.repos.d/#{original_repo_name}.repo"
+    tmp_file = TempFile.new
+    FileUtils.cp original_repo_file, tmp_file.path
+    sh "cat includepkgs >> #{tmp_file.path}"
+    tmp_file
+  end
+
+  task :all => [:s3_config, :init_mirrors_dir, :create_snapshot_folder, :reposync, :createrepo, :uploadrepo]
+end
+
 namespace :apt do
   task :init_repo do
     $REPO_DIR = if ENV['GO_SERVER_URL'] || ENV['CI']
@@ -133,3 +209,6 @@ end
 
 desc "the default task"
 task :default
+
+desc 'update mirrors'
+task :yum_mirrors => 'yum_mirrors:all'
