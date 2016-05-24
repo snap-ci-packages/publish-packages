@@ -11,7 +11,7 @@ task :s3_config do
 end
 
 deps = %w(
-  git-build chromedriver-build phantomjs-build python-build ruby-build ssh-build
+  git-build chromedriver-build phantomjs-build python-build ruby-build
   php-build papertrail-build java-build git-crypt-build autoconf-archive-build
   couchdb-build qt-build google-chrome-build
 )
